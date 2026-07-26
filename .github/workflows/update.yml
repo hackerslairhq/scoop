@@ -1,0 +1,49 @@
+name: Update manifest
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '17 7 * * *'
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Refresh from the latest Hacker's Lair release
+        env:
+          RELEASE_API: https://api.github.com/repos/hackerslairhq/desktop/releases/latest
+        run: |
+          release="$(curl --fail --silent --show-error --location "$RELEASE_API")"
+          tag="$(jq --raw-output '.tag_name' <<<"$release")"
+          version="${tag#v}"
+          archive_url="$(jq --raw-output '.assets[] | select(.name == "hackers-lair-win32-x64.zip") | .browser_download_url' <<<"$release")"
+          checksums_url="$(jq --raw-output '.assets[] | select(.name == "checksums.txt") | .browser_download_url' <<<"$release")"
+          test -n "$version"
+          test -n "$archive_url"
+          test -n "$checksums_url"
+          curl --fail --silent --show-error --location "$checksums_url" --output checksums.txt
+          archive_hash="$(awk '$2 == "hackers-lair-win32-x64.zip" { print $1 }' checksums.txt)"
+          test "${#archive_hash}" -eq 64
+          jq \
+            --arg version "$version" \
+            --arg url "$archive_url" \
+            --arg hash "$archive_hash" \
+            '.version = $version
+              | .architecture["64bit"].url = $url
+              | .architecture["64bit"].hash = $hash' \
+            bucket/hackerslair.json > bucket/hackerslair.json.next
+          mv bucket/hackerslair.json.next bucket/hackerslair.json
+
+      - name: Publish changed manifest
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add bucket/hackerslair.json
+          git diff --cached --quiet && exit 0
+          git commit -m "hackerslair: update release manifest"
+          git push
