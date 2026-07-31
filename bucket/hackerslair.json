@@ -1,12 +1,12 @@
 {
-  "version": "2.1.0-beta.8",
+  "version": "2.1.0-beta.9",
   "description": "Local-first desktop console for coding projects, processes, ports, and logs.",
   "homepage": "https://hackerslairhq.github.io/desktop/",
   "license": "MIT",
   "architecture": {
     "64bit": {
-      "url": "https://github.com/hackerslairhq/desktop/releases/download/v2.1.0-beta.8/hackers-lair-win32-x64.zip",
-      "hash": "e18fd2f8a1543cbc7551ec49275adcc2e3f0a64607bc0e9857877ece9af50306"
+      "url": "https://github.com/hackerslairhq/desktop/releases/download/v2.1.0-beta.9/hackers-lair-win32-x64.zip",
+      "hash": "3e1dfb4859970da79d6142b78f9918356fb5ae3e99ca1b53463318bfb080efe9"
     }
   },
   "bin": "lair.cmd",
